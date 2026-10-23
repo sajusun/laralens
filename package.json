@@ -1,0 +1,30 @@
+{
+  "name": "laralens",
+  "version": "1.0.0",
+  "description": "The Ultimate DevTools for Laravel & Inertia.js Developers - Auth Hub, Inertia Props & Ziggy Routes",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/build.js --watch",
+    "build": "tsc --noEmit && node scripts/build.js",
+    "generate-icons": "node scripts/generate-icons.js"
+  },
+  "keywords": [
+    "chrome-extension",
+    "laravel",
+    "inertiajs",
+    "ziggy",
+    "developer-tools",
+    "csrf-token",
+    "sanctum",
+    "vue",
+    "react"
+  ],
+  "author": "Sakhawat",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/chrome": "^0.0.280",
+    "@types/node": "^20.12.7",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.11"
+  }
+}

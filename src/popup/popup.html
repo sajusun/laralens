@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LaraLens - Laravel & Inertia.js DevTools</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo-box">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            <path d="M11 8v6M8 11h6" stroke-width="1.8"></path>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>LaraLens</h1>
+          <span class="brand-tag">DevTools</span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <div id="detection-badge" class="badge-status checking">
+          <span class="status-dot"></span>
+          <span id="detection-text">Scanning...</span>
+        </div>
+        <button id="btn-refresh" class="icon-btn" title="Refresh Page Inspection">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M23 4v6h-6"></path>
+            <path d="M1 20v-6h6"></path>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+      <button class="nav-tab active" data-tab="auth">
+        <span class="tab-icon">🛡️</span> Auth & CSRF
+      </button>
+      <button class="nav-tab" data-tab="inertia">
+        <span class="tab-icon">⚡</span> Inertia Props <span id="badge-inertia" class="tab-pill">0</span>
+      </button>
+      <button class="nav-tab" data-tab="ziggy">
+        <span class="tab-icon">🗺️</span> Ziggy Routes <span id="badge-routes" class="tab-pill">0</span>
+      </button>
+      <button class="nav-tab" data-tab="api">
+        <span class="tab-icon">🌐</span> API Tester
+      </button>
+    </nav>
+
+    <!-- Tab 1: Auth & CSRF Hub -->
+    <main id="tab-auth" class="tab-pane active">
+      <div class="section-banner">
+        <div>
+          <h3>Authentication & Security Hub</h3>
+          <p class="section-desc">Instantly extract CSRF tokens, session cookies, and cURL headers.</p>
+        </div>
+        <div class="generator-group">
+          <button id="btn-copy-curl" class="btn-gen" title="Copy ready-to-run cURL headers">
+            cURL Headers
+          </button>
+          <button id="btn-copy-postman" class="btn-gen" title="Copy Postman bulk-edit JSON headers">
+            Postman Headers
+          </button>
+        </div>
+      </div>
+
+      <div class="tokens-grid">
+        <!-- CSRF Token -->
+        <div class="token-card">
+          <div class="token-header">
+            <span class="token-title">X-CSRF-TOKEN (Meta Tag)</span>
+            <button class="btn-copy-token" data-target="csrf">Copy</button>
+          </div>
+          <div id="val-csrf" class="token-val empty">Scanning page meta...</div>
+        </div>
+
+        <!-- XSRF Cookie -->
+        <div class="token-card">
+          <div class="token-header">
+            <span class="token-title">XSRF-TOKEN (Cookie Decoded)</span>
+            <button class="btn-copy-token" data-target="xsrf">Copy</button>
+          </div>
+          <div id="val-xsrf" class="token-val empty">Scanning cookies...</div>
+        </div>
+
+        <!-- Session Cookie -->
+        <div class="token-card">
+          <div class="token-header">
+            <span class="token-title">laravel_session (Encrypted Cookie)</span>
+            <button class="btn-copy-token" data-target="session">Copy</button>
+          </div>
+          <div id="val-session" class="token-val empty">Scanning cookies...</div>
+        </div>
+
+        <!-- Bearer Token -->
+        <div class="token-card">
+          <div class="token-header">
+            <span class="token-title">Bearer Token (Sanctum / JWT)</span>
+            <button class="btn-copy-token" data-target="bearer">Copy</button>
+          </div>
+          <div id="val-bearer" class="token-val empty">No token in storage</div>
+        </div>
+      </div>
+
+      <!-- Authenticated User Banner (if present in Inertia/Page) -->
+      <div id="auth-user-card" class="auth-user-card" style="display: none;">
+        <div class="user-avatar-dot">👤</div>
+        <div class="user-details">
+          <span class="user-label">Logged-in User</span>
+          <span id="user-info-text" class="user-info-text">User</span>
+        </div>
+        <button id="btn-copy-user" class="btn-copy-sm">Copy JSON</button>
+      </div>
+    </main>
+
+    <!-- Tab 2: Inertia.js Props Explorer -->
+    <main id="tab-inertia" class="tab-pane">
+      <div class="inertia-header-card">
+        <div class="inertia-meta">
+          <div class="comp-badge-row">
+            <span class="tag-label">COMPONENT</span>
+            <span id="inertia-comp-name" class="comp-name">None detected</span>
+          </div>
+          <div class="comp-sub-row">
+            <span id="inertia-version-tag" class="sub-tag">v?</span>
+            <span id="inertia-url-tag" class="sub-tag url">URL</span>
+          </div>
+        </div>
+        <div class="inertia-actions">
+          <button id="btn-copy-props" class="btn-gen">Copy All Props</button>
+        </div>
+      </div>
+
+      <!-- Inertia Props Filter Bar -->
+      <div class="props-toolbar">
+        <div class="sub-tab-group">
+          <button class="sub-tab active" data-view="page">Page Props</button>
+          <button class="sub-tab" data-view="shared">Shared Props</button>
+          <button class="sub-tab" data-view="raw">Raw Data</button>
+        </div>
+        <input type="text" id="input-filter-props" class="filter-input" placeholder="Search props (key or value)...">
+      </div>
+
+      <!-- Props JSON Viewer -->
+      <div class="props-container">
+        <pre id="props-json-viewer" class="json-viewer"></pre>
+        <div id="props-empty" class="empty-state" style="display: none;">
+          No Inertia.js page data found on this tab.
+        </div>
+      </div>
+    </main>
+
+    <!-- Tab 3: Ziggy Routes Navigator -->
+    <main id="tab-ziggy" class="tab-pane">
+      <div class="routes-toolbar">
+        <input type="text" id="input-filter-routes" class="filter-input" placeholder="Search routes by name or URI (e.g. users, /api/orders)...">
+        <div class="method-filter-group">
+          <button class="method-btn active" data-method="ALL">ALL</button>
+          <button class="method-btn" data-method="GET">GET</button>
+          <button class="method-btn" data-method="POST">POST</button>
+          <button class="method-btn" data-method="PUT">PUT</button>
+          <button class="method-btn" data-method="DELETE">DEL</button>
+        </div>
+      </div>
+
+      <div class="routes-summary-bar">
+        <span id="routes-count-label">0 routes found</span>
+        <button id="btn-copy-all-routes" class="btn-text">Copy Routes JSON</button>
+      </div>
+
+      <div id="routes-list" class="routes-list">
+        <div class="empty-state">No Ziggy routes detected on this page.</div>
+      </div>
+    </main>
+
+    <!-- Tab 4: API Request Tool -->
+    <main id="tab-api" class="tab-pane">
+      <div class="api-card">
+        <div class="api-input-row">
+          <select id="api-method" class="api-method-select">
+            <option value="GET">GET</option>
+            <option value="POST">POST</option>
+            <option value="PUT">PUT</option>
+            <option value="DELETE">DELETE</option>
+          </select>
+          <input type="text" id="api-endpoint" class="api-url-input" placeholder="/api/user or route URI">
+          <button id="btn-send-api" class="btn-send">Send</button>
+        </div>
+
+        <div class="api-headers-note">
+          <span class="badge-dot green"></span>
+          Auto-attached: <code>X-XSRF-TOKEN</code>, <code>laravel_session</code>, <code>Accept: application/json</code>
+        </div>
+      </div>
+
+      <!-- API Response Box -->
+      <div class="api-response-card">
+        <div class="api-response-header">
+          <span class="response-title">RESPONSE</span>
+          <span id="api-status-badge" class="status-code-badge">Ready</span>
+        </div>
+        <pre id="api-response-viewer" class="json-viewer api-view">// Click Send to test your Laravel endpoint with current session cookies</pre>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-left">
+        <span class="version-label">LaraLens v1.0.0</span>
+      </div>
+      <div class="footer-right">
+        <span id="footer-page-url" class="page-url-label">Waiting for active tab...</span>
+      </div>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">Copied to clipboard!</div>
+
+  </div>
+
+  <script type="module" src="popup.ts"></script>
+</body>
+</html>
