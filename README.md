@@ -116,7 +116,8 @@ The production-ready extension will be generated in `./dist`.
 **LaraLens** is architected and built with ❤️ by:
 
 ### **Sakhawat Hossain**
-- 🌐 **GitHub:** [@sajusun](https://github.com/sajusun)
+- 🌐 **Portfolio & Website:** [https://sajusun.github.io](https://sajusun.github.io)
+- 🐙 **GitHub:** [@sajusun](https://github.com/sajusun)
 - 💼 **Role:** Full-Stack & Developer Tooling Engineer
 
 ---
