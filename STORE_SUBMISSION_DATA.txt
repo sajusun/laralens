@@ -169,10 +169,20 @@ All store graphic assets have been automatically generated in your project:
 2. Small Promotional Tile (440 x 280 px) - Recommended by Microsoft Edge:
    Location: store-assets/promo-small-440x280.png
 
-3. Extension Icons (Standard MV3 package):
+3. Store Screenshots (1280 x 800 px) - Required by Microsoft Edge (Up to 6 images):
+   • Screenshot 1: store-assets/screenshot-1-auth-hub.png
+     Title: Authentication & CSRF Security Hub (CSRF tokens, session cookies, cURL/Postman copy, 1-click Reset Session)
+   • Screenshot 2: store-assets/screenshot-2-inertia-props.png
+     Title: Live Inertia.js Props & Form Validation Inspector (Props hierarchy, search filter, validation errors & flash alerts)
+   • Screenshot 3: store-assets/screenshot-3-ziggy-routes.png
+     Title: Zero-Terminal Ziggy Routes Discovery (Search routes, HTTP method badges, copy route helper or router.visit snippet)
+   • Screenshot 4: store-assets/screenshot-4-api-tester.png
+     Title: Integrated API Tester with Session Isolation (JWT Bearer tokens, JSON body editor, protected web session)
+
+4. Extension Icons (Standard MV3 package):
    Location: public/icons/icon-16.png, icon-32.png, icon-48.png, icon-128.png
 
-4. Production ZIP Package - Ready for Direct Upload:
+5. Production ZIP Package - Ready for Direct Upload:
    Location: laralens-v1.0.0.zip
    (Generated automatically via: pnpm run pack)
 ================================================================================
