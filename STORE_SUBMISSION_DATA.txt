@@ -1,0 +1,178 @@
+================================================================================
+LARALENS - MICROSOFT EDGE ADD-ONS & CHROME WEB STORE SUBMISSION DATA
+================================================================================
+Developer: Sakhawat Hossain
+Website / Portfolio: https://sajusun.github.io
+GitHub Repository: https://github.com/sajusun/laralens
+Support & Issues: https://github.com/sajusun/laralens/issues
+License: MIT (100% Free & Open Source)
+Extension Package File: laralens-v1.0.0.zip
+================================================================================
+
+--------------------------------------------------------------------------------
+1. PRODUCT DETAILS (PARTNER CENTER FIELDS)
+--------------------------------------------------------------------------------
+
+[EXTENSION NAME]
+LaraLens - Laravel & Inertia.js DevTools
+
+[SHORT DESCRIPTION] (Max 280 characters strictly enforced by Edge Partner Center)
+Inspect CSRF tokens, session cookies, Inertia.js props, and Ziggy routes on any Laravel application. Includes 1-click cURL/Postman header copy, session reset, and API tester.
+(Length: 178 characters)
+
+[PRODUCT CATEGORY]
+Primary Category: Developer Tools
+Secondary Category: Web Development (or Utilities)
+
+[TARGET AUDIENCE & AGE RATING]
+Age Rating: All ages (No mature or objectionable content)
+Markets: Worldwide (All regions)
+Pricing: Free (100% Free, No In-App Purchases, No Subscriptions)
+
+[PRIMARY LANGUAGE]
+English (United States)
+
+
+--------------------------------------------------------------------------------
+2. DETAILED DESCRIPTION (MARKDOWN & TEXT COMPATIBLE)
+--------------------------------------------------------------------------------
+Copy and paste the text below into the "Detailed Description" field on Microsoft Partner Center:
+
+Stop digging through native browser DevTools just to find CSRF tokens, session cookies, Inertia props, or backend routes.
+
+LaraLens is the ultimate browser developer toolkit engineered specifically for Laravel, Inertia.js (Vue/React), and modern full-stack web developers. It automatically detects Laravel applications on your active tab and delivers an instant 1-click inspection dashboard.
+
+Key Features & Capabilities:
+
+1. 🛡️ Authentication & CSRF Hub
+• Instant Token Extraction: Reads meta csrf-token, XSRF-TOKEN cookie, and laravel_session cookie simultaneously.
+• Bearer Token Scanner: Detects active Sanctum and JWT API tokens from local storage.
+• 1-Click cURL & Postman Exporter: Instantly copy complete terminal cURL commands or formatted Postman Bulk Edit JSON headers with active session cookies and CSRF headers.
+• 🧹 1-Click Session Reset: Clear Laravel session cookies and reload the tab with one click to test guest views or expired session workflows.
+• Authenticated User Card: View the current logged-in user profile extracted directly from shared Inertia props.
+
+2. ⚡ Inertia.js Props Explorer
+• Component Inspector: Identifies active page components (e.g., Pages/Dashboard, Auth/Login).
+• Validation Errors & Flash Callout: Prominently highlights validation errors and flash notifications so you immediately know why form submissions failed.
+• Categorized Props Tree: Switch between Page Props, Shared Props, and Raw Payload.
+• Real-Time Search: Filter props by key name or JSON value instantly.
+• 1-Click Export: Copy entire props trees to clipboard for fast debugging.
+
+3. 🗺️ Ziggy Routes Navigator
+• Zero-Terminal Route Discovery: Inspect all registered routes directly from window.Ziggy without running artisan commands.
+• Method Filtering: Filter routes by GET, POST, PUT, PATCH, and DELETE.
+• Instant Search: Real-time search by route name (e.g., users.create) or URI (e.g., /api/orders).
+• Quick Code Snippets: 1-click copy for Route URI, Ziggy route() helper, or Inertia router.visit() call.
+
+4. 🌐 Built-in Quick API Tester
+• Test Laravel endpoints directly from the extension popup.
+• Automatically attaches current tab XSRF-TOKEN, laravel_session, and Accept: application/json headers.
+• Request Body Editor: Built-in JSON body editor with automatic syntax prettification for POST, PUT, and PATCH requests.
+• Live Response Inspector: View HTTP response status codes, latency timings, and formatted JSON output.
+
+Privacy & Security Guarantee:
+LaraLens operates 100% client-side inside your local browser. It does NOT track, harvest, collect, or transmit any cookie values, URLs, or browsing data to any external server. 
+
+Open Source & Developer Credits:
+LaraLens is proudly open-source under the MIT license.
+Architected and crafted with ❤️ by Sakhawat Hossain.
+Portfolio: https://sajusun.github.io
+GitHub: https://github.com/sajusun/laralens
+
+
+--------------------------------------------------------------------------------
+3. SEARCH KEYWORDS / TAGS (Up to 21 Keywords for Edge / Chrome)
+--------------------------------------------------------------------------------
+laravel, inertiajs, devtools, ziggy, csrf, xsrf token, vue, react, php, fullstack, sanctum, api tester, postman, curl, web development, developer tools, laravel debugbar, telescope, session cookie, rest api, inertia
+
+
+--------------------------------------------------------------------------------
+4. STORE LINKS & SUPPORT METADATA
+--------------------------------------------------------------------------------
+[WEBSITE / PORTFOLIO]
+https://sajusun.github.io
+
+[REPOSITORY URL]
+https://github.com/sajusun/laralens
+
+[SUPPORT / ISSUE TRACKER URL]
+https://github.com/sajusun/laralens/issues
+
+[PRIVACY POLICY URL] (Mandatory for Microsoft Edge & Chrome Web Store)
+https://sajusun.github.io/laralens/public/privacy-policy.html
+(or: https://github.com/sajusun/laralens/blob/main/PRIVACY_POLICY.md)
+
+[TERMS OF SERVICE URL]
+https://github.com/sajusun/laralens/blob/main/TERMS.md
+
+[DEVELOPER CONTACT EMAIL]
+(Enter your developer email on Microsoft Partner Center)
+
+
+--------------------------------------------------------------------------------
+5. PERMISSIONS JUSTIFICATION (FOR STORE REVIEWERS / CERTIFICATION NOTES)
+--------------------------------------------------------------------------------
+When Microsoft Edge Partner Center asks why the extension requests permissions, copy and paste these justifications:
+
+1. activeTab:
+"Required to inspect the DOM of the active tab only when the developer clicks the LaraLens extension icon, allowing extraction of the CSRF meta tag and Inertia page data."
+
+2. cookies:
+"Required to read local Laravel session cookies (XSRF-TOKEN and laravel_session) strictly on the active domain for generating local development cURL/Postman test headers and enabling the 1-click developer session reset feature."
+
+3. storage:
+"Used exclusively for storing developer UI preferences locally within the browser (such as active tab view, filter preferences)."
+
+4. scripting:
+"Required to inject a lightweight, non-destructive bridge script into the active page context to read window.Ziggy routes and window.__page Inertia properties."
+
+5. host_permissions (http://*/*, https://*/*):
+"LaraLens is a developer inspection utility that must operate across local and remote development environments where Laravel applications run. Developers frequently host their applications on custom local hosts, including http://localhost:*, http://127.0.0.1:*, http://*.test, http://*.local, and custom staging/production subdomains. Broad host permissions are required solely so the extension can detect Laravel apps across custom local developer ports and domains. No network traffic is intercepted or monitored."
+
+
+--------------------------------------------------------------------------------
+6. STEP-BY-STEP REVIEWER TESTING INSTRUCTIONS (CERTIFICATION NOTES)
+--------------------------------------------------------------------------------
+Copy and paste this into the "Notes for Certification" box in the Microsoft Edge submission form:
+
+"Dear Microsoft Edge Certification Team,
+
+LaraLens is a developer inspection tool for Laravel and Inertia.js web applications.
+
+How to test the extension:
+1. Install and load the LaraLens extension.
+2. Option A (With Demo Mode):
+   - Click the LaraLens icon on any standard webpage or blank tab.
+   - LaraLens will automatically initialize in interactive Demo Mode showcasing mock Laravel & Inertia data (CSRF tokens, session cookies, Inertia page props, Ziggy routes, and API tester).
+   - Test the tabs: Click 'Auth & CSRF' to view and copy tokens. Click 'Inertia Props' to search and inspect component props. Click 'Ziggy Routes' to search backend routes. Click 'API Tester' to test sample requests.
+3. Option B (With Live Laravel/Inertia Website):
+   - Navigate to any public Laravel or Inertia.js application (e.g., https://inertiajs.com or any Laravel app).
+   - Click the LaraLens toolbar icon.
+   - The badge will light up 'INRT' or 'LARA'. The popup will display active page data, CSRF tokens, and Inertia components.
+
+Security & Privacy:
+- LaraLens contains zero remote scripts, zero tracking, and zero external network calls.
+- All operations are 100% client-side.
+- The complete source code is open source and available at: https://github.com/sajusun/laralens
+
+Thank you for your review!"
+
+
+--------------------------------------------------------------------------------
+7. STORE ASSETS CHECKLIST
+--------------------------------------------------------------------------------
+All store graphic assets have been automatically generated in your project:
+
+1. Store Icon (300 x 300 px) - Required by Microsoft Edge:
+   Location: store-assets/store-icon-300.png
+
+2. Small Promotional Tile (440 x 280 px) - Recommended by Microsoft Edge:
+   Location: store-assets/promo-small-440x280.png
+
+3. Extension Icons (Standard MV3 package):
+   Location: public/icons/icon-16.png, icon-32.png, icon-48.png, icon-128.png
+
+4. Production ZIP Package - Ready for Direct Upload:
+   Location: laralens-v1.0.0.zip
+   (Generated automatically via: pnpm run pack)
+================================================================================

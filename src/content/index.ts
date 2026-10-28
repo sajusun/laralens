@@ -71,13 +71,25 @@ function inspectCurrentPage(): PageInspectionResult {
       }
     });
 
+    const errors =
+      rawProps.errors && typeof rawProps.errors === 'object' && Object.keys(rawProps.errors).length > 0
+        ? (rawProps.errors as Record<string, unknown>)
+        : undefined;
+
+    const flash =
+      rawProps.flash && typeof rawProps.flash === 'object' && Object.keys(rawProps.flash).length > 0
+        ? (rawProps.flash as Record<string, unknown>)
+        : undefined;
+
     inertiaParsed = {
       component: inertiaRaw.component,
       url: inertiaRaw.url,
       version: inertiaRaw.version,
       pageProps: pageSpecific,
       sharedProps: shared,
-      rawPageData: inertiaRaw
+      rawPageData: inertiaRaw,
+      errors,
+      flash
     };
   }
 

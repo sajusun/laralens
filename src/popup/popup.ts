@@ -28,6 +28,7 @@ const authUserCard = document.getElementById('auth-user-card') as HTMLDivElement
 const userInfoText = document.getElementById('user-info-text') as HTMLSpanElement;
 const btnCopyCurl = document.getElementById('btn-copy-curl') as HTMLButtonElement;
 const btnCopyPostman = document.getElementById('btn-copy-postman') as HTMLButtonElement;
+const btnClearSession = document.getElementById('btn-clear-session') as HTMLButtonElement;
 const btnCopyUser = document.getElementById('btn-copy-user') as HTMLButtonElement;
 
 // DOM: Tab 2 (Inertia)
@@ -35,6 +36,7 @@ const inertiaCompName = document.getElementById('inertia-comp-name') as HTMLSpan
 const inertiaVersionTag = document.getElementById('inertia-version-tag') as HTMLSpanElement;
 const inertiaUrlTag = document.getElementById('inertia-url-tag') as HTMLSpanElement;
 const btnCopyProps = document.getElementById('btn-copy-props') as HTMLButtonElement;
+const inertiaAlerts = document.getElementById('inertia-alerts') as HTMLDivElement;
 const subTabs = document.querySelectorAll<HTMLButtonElement>('.sub-tab');
 const inputFilterProps = document.getElementById('input-filter-props') as HTMLInputElement;
 const propsJsonViewer = document.getElementById('props-json-viewer') as HTMLPreElement;
@@ -50,6 +52,9 @@ const routesList = document.getElementById('routes-list') as HTMLDivElement;
 // DOM: Tab 4 (API)
 const apiMethod = document.getElementById('api-method') as HTMLSelectElement;
 const apiEndpoint = document.getElementById('api-endpoint') as HTMLInputElement;
+const apiBodyGroup = document.getElementById('api-body-group') as HTMLDivElement;
+const apiRequestBody = document.getElementById('api-request-body') as HTMLTextAreaElement;
+const btnFormatBody = document.getElementById('btn-format-body') as HTMLButtonElement;
 const btnSendApi = document.getElementById('btn-send-api') as HTMLButtonElement;
 const apiStatusBadge = document.getElementById('api-status-badge') as HTMLSpanElement;
 const apiResponseViewer = document.getElementById('api-response-viewer') as HTMLPreElement;
@@ -104,9 +109,10 @@ function setupEventListeners(): void {
     });
   });
 
-  // cURL & Postman generators
+  // cURL, Postman & Session reset
   btnCopyCurl.addEventListener('click', copyCurlHeaders);
   btnCopyPostman.addEventListener('click', copyPostmanHeaders);
+  btnClearSession.addEventListener('click', handleClearSession);
   btnCopyUser.addEventListener('click', () => {
     if (pageData?.auth.authUser) {
       copyToClipboard(JSON.stringify(pageData.auth.authUser, null, 2), 'User object copied!');
@@ -155,6 +161,21 @@ function setupEventListeners(): void {
 
   // API Tester
   btnSendApi.addEventListener('click', handleApiSend);
+  apiMethod.addEventListener('change', () => {
+    const needsBody = ['POST', 'PUT', 'PATCH'].includes(apiMethod.value);
+    apiBodyGroup.style.display = needsBody ? 'flex' : 'none';
+  });
+  btnFormatBody.addEventListener('click', () => {
+    const raw = apiRequestBody.value.trim();
+    if (!raw) return;
+    try {
+      const parsed = JSON.parse(raw);
+      apiRequestBody.value = JSON.stringify(parsed, null, 2);
+      showToast('JSON formatted!');
+    } catch {
+      showToast('Invalid JSON syntax');
+    }
+  });
 }
 
 function loadActiveTabInspection(): void {
@@ -333,6 +354,7 @@ function renderAll(): void {
     inertiaVersionTag.textContent = pageData.inertia.version ? `v${pageData.inertia.version}` : 'v1.0';
     inertiaUrlTag.textContent = pageData.inertia.url || activeTab?.url || '';
     propsEmpty.style.display = 'none';
+    renderInertiaAlerts();
     renderInertiaProps();
   } else {
     badgeInertia.textContent = '0';
@@ -340,6 +362,8 @@ function renderAll(): void {
     inertiaVersionTag.textContent = '-';
     inertiaUrlTag.textContent = '-';
     propsJsonViewer.textContent = '';
+    inertiaAlerts.style.display = 'none';
+    inertiaAlerts.innerHTML = '';
     propsEmpty.style.display = 'block';
   }
 
@@ -353,6 +377,57 @@ function renderAll(): void {
     routesCountLabel.textContent = '0 routes found';
     routesList.innerHTML = '<div class="empty-state">No Ziggy routes detected on this page.</div>';
   }
+}
+
+function renderInertiaAlerts(): void {
+  if (!pageData?.inertia) {
+    inertiaAlerts.style.display = 'none';
+    inertiaAlerts.innerHTML = '';
+    return;
+  }
+
+  const errors = pageData.inertia.errors || (pageData.inertia.sharedProps?.errors as Record<string, unknown>);
+  const flash = pageData.inertia.flash || (pageData.inertia.sharedProps?.flash as Record<string, unknown>);
+
+  const hasErrors = errors && typeof errors === 'object' && Object.keys(errors).length > 0;
+  const hasFlash = flash && typeof flash === 'object' && Object.keys(flash).length > 0;
+
+  if (!hasErrors && !hasFlash) {
+    inertiaAlerts.style.display = 'none';
+    inertiaAlerts.innerHTML = '';
+    return;
+  }
+
+  inertiaAlerts.innerHTML = '';
+  inertiaAlerts.style.display = 'flex';
+
+  if (hasErrors) {
+    const errBox = document.createElement('div');
+    errBox.className = 'inertia-alert error';
+    errBox.innerHTML = `
+      <div class="inertia-alert-title">
+        <span>⚠️ Validation Errors Detected (${Object.keys(errors).length})</span>
+      </div>
+      <div class="inertia-alert-content">${escapeHtml(JSON.stringify(errors, null, 2))}</div>
+    `;
+    inertiaAlerts.appendChild(errBox);
+  }
+
+  if (hasFlash) {
+    const flashBox = document.createElement('div');
+    flashBox.className = 'inertia-alert flash';
+    flashBox.innerHTML = `
+      <div class="inertia-alert-title">
+        <span>💬 Flash Notification</span>
+      </div>
+      <div class="inertia-alert-content">${escapeHtml(JSON.stringify(flash, null, 2))}</div>
+    `;
+    inertiaAlerts.appendChild(flashBox);
+  }
+}
+
+function escapeHtml(str: string): string {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 function renderInertiaProps(): void {
@@ -462,8 +537,17 @@ function renderZiggyRoutes(): void {
       copyToClipboard(`route('${name}')`, 'route() copied!');
     });
 
+    const copyVisitBtn = document.createElement('button');
+    copyVisitBtn.className = 'btn-route-action';
+    copyVisitBtn.textContent = 'visit()';
+    copyVisitBtn.title = 'Copy router.visit() call';
+    copyVisitBtn.addEventListener('click', () => {
+      copyToClipboard(`router.visit(route('${name}'))`, 'router.visit() copied!');
+    });
+
     actions.appendChild(copyUriBtn);
     actions.appendChild(copyZiggyBtn);
+    actions.appendChild(copyVisitBtn);
 
     card.appendChild(left);
     card.appendChild(actions);
@@ -510,6 +594,37 @@ function copyPostmanHeaders(): void {
   copyToClipboard(JSON.stringify(list, null, 2), 'Postman headers JSON copied!');
 }
 
+function handleClearSession(): void {
+  const url = activeTab?.url || pageData?.url;
+  if (!url) {
+    showToast('No active tab URL to reset');
+    return;
+  }
+
+  btnClearSession.textContent = 'Clearing...';
+  if (typeof chrome !== 'undefined' && chrome.runtime?.sendMessage) {
+    chrome.runtime.sendMessage({ type: 'LARALENS_CLEAR_COOKIES', url }, (res) => {
+      btnClearSession.textContent = '🧹 Reset Session';
+      if (res?.success) {
+        showToast(`Cleared ${res.count || 0} session cookies! Reloading...`);
+        if (activeTab?.id) {
+          setTimeout(() => {
+            chrome.tabs.reload(activeTab!.id!);
+            window.close();
+          }, 600);
+        }
+      } else {
+        showToast('Could not clear cookies');
+      }
+    });
+  } else {
+    setTimeout(() => {
+      btnClearSession.textContent = '🧹 Reset Session';
+      showToast('Cleared mock session cookies!');
+    }, 400);
+  }
+}
+
 async function handleApiSend(): Promise<void> {
   let endpoint = apiEndpoint.value.trim();
   if (!endpoint) endpoint = '/api/user';
@@ -541,10 +656,17 @@ async function handleApiSend(): Promise<void> {
     if (xsrf) headers['X-XSRF-TOKEN'] = xsrf;
     if (bearer) headers['Authorization'] = `Bearer ${bearer}`;
 
+    const needsBody = ['POST', 'PUT', 'PATCH'].includes(method);
+    let body: string | undefined = undefined;
+    if (needsBody && apiRequestBody.value.trim()) {
+      body = apiRequestBody.value.trim();
+    }
+
     const start = performance.now();
     const res = await fetch(fullUrl, {
       method,
       headers,
+      body,
       credentials: 'include'
     });
     const duration = Math.round(performance.now() - start);

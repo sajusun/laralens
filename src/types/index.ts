@@ -23,6 +23,8 @@ export interface InertiaData {
   pageProps: Record<string, unknown>;
   sharedProps: Record<string, unknown>;
   rawPageData?: Record<string, unknown>;
+  errors?: Record<string, unknown>;
+  flash?: Record<string, unknown>;
 }
 
 export interface ZiggyRoute {

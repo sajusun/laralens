@@ -57,4 +57,46 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
     return true; // async sendResponse
   }
+
+  if (message.type === 'LARALENS_CLEAR_COOKIES') {
+    const url = message.url;
+    if (!url) {
+      sendResponse({ success: false, count: 0 });
+      return true;
+    }
+
+    try {
+      chrome.cookies.getAll({ url }, (cookies) => {
+        const toRemove = cookies.filter(
+          (c) =>
+            c.name === 'XSRF-TOKEN' ||
+            c.name.toLowerCase().includes('session') ||
+            c.name.startsWith('remember_')
+        );
+
+        if (toRemove.length === 0) {
+          sendResponse({ success: true, count: 0 });
+          return;
+        }
+
+        let removedCount = 0;
+        toRemove.forEach((c) => {
+          const protocol = c.secure ? 'https:' : 'http:';
+          const domain = c.domain.startsWith('.') ? c.domain.slice(1) : c.domain;
+          const cookieUrl = `${protocol}//${domain}${c.path}`;
+
+          chrome.cookies.remove({ url: cookieUrl, name: c.name }, () => {
+            removedCount++;
+            if (removedCount === toRemove.length) {
+              sendResponse({ success: true, count: removedCount });
+            }
+          });
+        });
+      });
+    } catch (err) {
+      console.error('[LaraLens] Clear cookies error:', err);
+      sendResponse({ success: false, count: 0, error: String(err) });
+    }
+    return true; // async sendResponse
+  }
 });

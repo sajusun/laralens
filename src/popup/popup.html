@@ -70,6 +70,9 @@
           <button id="btn-copy-postman" class="btn-gen" title="Copy Postman bulk-edit JSON headers">
             Postman Headers
           </button>
+          <button id="btn-clear-session" class="btn-gen btn-danger-soft" title="Clear session cookies & reload active tab">
+            🧹 Reset Session
+          </button>
         </div>
       </div>
 
@@ -140,6 +143,9 @@
         </div>
       </div>
 
+      <!-- Inertia Flash & Validation Errors Alerts -->
+      <div id="inertia-alerts" class="inertia-alerts-container" style="display: none;"></div>
+
       <!-- Inertia Props Filter Bar -->
       <div class="props-toolbar">
         <div class="sub-tab-group">
@@ -190,10 +196,20 @@
             <option value="GET">GET</option>
             <option value="POST">POST</option>
             <option value="PUT">PUT</option>
+            <option value="PATCH">PATCH</option>
             <option value="DELETE">DELETE</option>
           </select>
           <input type="text" id="api-endpoint" class="api-url-input" placeholder="/api/user or route URI">
           <button id="btn-send-api" class="btn-send">Send</button>
+        </div>
+
+        <!-- Request Body Editor for POST / PUT / PATCH -->
+        <div id="api-body-group" class="api-body-group" style="display: none;">
+          <div class="api-body-header">
+            <span class="body-label">JSON Request Body (POST/PUT/PATCH)</span>
+            <button id="btn-format-body" class="btn-text-sm" type="button">Prettify JSON</button>
+          </div>
+          <textarea id="api-request-body" class="api-body-input" rows="4" placeholder='{\n  "name": "Test Item",\n  "status": "active"\n}'></textarea>
         </div>
 
         <div class="api-headers-note">
@@ -216,6 +232,10 @@
     <footer class="app-footer">
       <div class="footer-left">
         <span class="version-label">LaraLens v1.0.0</span>
+        <span class="dot-separator">•</span>
+        <a href="https://github.com/sajusun/laralens" target="_blank" class="footer-link" title="Star on GitHub">GitHub ⭐</a>
+        <span class="dot-separator">•</span>
+        <a href="https://sajusun.github.io" target="_blank" class="footer-link" title="Developer Portfolio">Sakhawat Hossain</a>
       </div>
       <div class="footer-right">
         <span id="footer-page-url" class="page-url-label">Waiting for active tab...</span>

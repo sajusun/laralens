@@ -41,6 +41,7 @@ LaraLens lives right in your browser toolbar:
 ### 1. 🛡️ Auth & CSRF Hub
 - **Instant Token Extraction:** Automatically reads `<meta name="csrf-token">`, `XSRF-TOKEN` cookie, and `laravel_session` cookie.
 - **Bearer Token Scanner:** Automatically scans local storage for Sanctum / JWT API tokens.
+- **🧹 1-Click Session Reset:** Clears active `laravel_session`, `XSRF-TOKEN`, and remember cookies and reloads the active tab to instantly test guest workflows.
 - **Logged-in User Card:** Displays current authenticated user info (Name, Email, ID) extracted from shared props.
 - **cURL Header Generator:** Generates ready-to-run terminal commands:
   ```bash
@@ -50,21 +51,24 @@ LaraLens lives right in your browser toolbar:
 
 ### 2. ⚡ Inertia.js Props Explorer
 - **Component Inspector:** Identifies the active Inertia page component (e.g. `Pages/Orders/Show` or `Auth/Login`).
+- **Validation Errors & Flash Callout:** Prominently highlights validation errors (`errors`) and flash notifications (`flash.message`) so you immediately know why form submissions failed.
 - **Interactive JSON Tree:** View props in categorized tabs (`Page Props`, `Shared Props`, and `Raw Payload`).
 - **Live Search & Filter:** Search props by key name or value in real time.
 - **1-Click Export:** Copy individual values or the entire props payload to your clipboard.
 
 ### 3. 🗺️ Ziggy Routes Navigator
 - **Zero-Terminal Route Search:** Reads `window.Ziggy` routes directly from the page.
-- **Method Filters:** Filter routes by `GET`, `POST`, `PUT`, `DELETE`.
+- **Method Filters:** Filter routes by `GET`, `POST`, `PUT`, `PATCH`, `DELETE`.
 - **Search Bar:** Real-time search by route name (e.g. `users.create`) or URI (e.g. `/api/v1/orders`).
 - **Quick Helpers:**
   - Copy Route URI (`/users/{user}`)
   - Copy Ziggy helper code (`route('users.show', { id: 1 })`)
+  - Copy Inertia visit call (`router.visit(route('users.show'))`)
 
 ### 4. 🌐 Quick API Tester
 - Test any backend route directly from the extension popup.
-- Automatically attaches the current page's `X-XSRF-TOKEN`, `laravel_session` cookie, and `Accept: application/json` headers.
+- Automatically attaches current page `X-XSRF-TOKEN`, `laravel_session` cookie, and `Accept: application/json` headers.
+- **JSON Request Body Editor:** Built-in collapsible JSON body input with syntax prettification for `POST`, `PUT`, and `PATCH` requests.
 - Displays HTTP response status (`200 OK`, `419 Page Expired`, `401 Unauthorized`, `422 Unprocessable Entity`) and response time.
 
 ---
@@ -78,9 +82,13 @@ cd laralens
 
 pnpm install
 pnpm run build
+pnpm run pack
 ```
 
-The production-ready extension will be generated in `./dist`.
+- `./dist`: Contains the compiled, unpacked extension.
+- `./laralens-v1.0.0.zip`: Ready for direct upload to Microsoft Edge Add-ons & Chrome Web Store.
+- [`STORE_SUBMISSION_DATA.txt`](STORE_SUBMISSION_DATA.txt): Complete store listing metadata.
+- [`MICROSOFT_EDGE_SUBMISSION_GUIDE.md`](MICROSOFT_EDGE_SUBMISSION_GUIDE.md): Step-by-step submission guide.
 
 ### 2. Load into Chrome / Brave / Edge
 1. Open Chrome and navigate to `chrome://extensions/`.
