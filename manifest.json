@@ -16,8 +16,7 @@
     "scripting"
   ],
   "host_permissions": [
-    "http://*/*",
-    "https://*/*"
+    "<all_urls>"
   ],
   "background": {
     "service_worker": "background.js",
@@ -25,7 +24,7 @@
   },
   "content_scripts": [
     {
-      "matches": ["http://*/*", "https://*/*"],
+      "matches": ["<all_urls>"],
       "js": ["content.js"],
       "run_at": "document_idle"
     }
@@ -33,7 +32,7 @@
   "web_accessible_resources": [
     {
       "resources": ["page-bridge.js"],
-      "matches": ["http://*/*", "https://*/*"]
+      "matches": ["<all_urls>"]
     }
   ],
   "action": {

@@ -350,6 +350,11 @@ body {
   justify-content: space-between;
 }
 
+.token-btn-group {
+  display: flex;
+  gap: 4px;
+}
+
 .token-title {
   font-size: 10px;
   font-weight: 700;
@@ -826,6 +831,63 @@ body {
 
 .btn-send:hover {
   opacity: 0.9;
+}
+
+.api-auth-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 8px;
+}
+
+.api-auth-field {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.api-auth-prefix {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+}
+
+.api-bearer-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: #fff;
+}
+
+.api-bearer-input::placeholder {
+  color: var(--text-dim);
+}
+
+.api-cookie-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-left: 1px solid var(--border);
+  padding-left: 8px;
+  user-select: none;
+}
+
+.api-cookie-checkbox input {
+  cursor: pointer;
+  accent-color: var(--accent-red);
 }
 
 .api-body-group {

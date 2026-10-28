@@ -47,6 +47,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             cookieMap['laravel_session'] = c.value;
           } else if (c.name.startsWith('remember_web_')) {
             cookieMap['remember_token'] = c.value;
+          } else if (
+            c.name.toLowerCase() === 'jwt' ||
+            c.name.toLowerCase() === 'token' ||
+            c.name.toLowerCase() === 'access_token' ||
+            c.name.toLowerCase() === 'auth_token' ||
+            c.value.startsWith('eyJ')
+          ) {
+            cookieMap['bearerToken'] = c.value.replace(/^Bearer\s+/i, '');
           }
         }
         sendResponse({ cookies: cookieMap });
@@ -65,38 +73,84 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       return true;
     }
 
-    try {
-      chrome.cookies.getAll({ url }, (cookies) => {
-        const toRemove = cookies.filter(
-          (c) =>
-            c.name === 'XSRF-TOKEN' ||
-            c.name.toLowerCase().includes('session') ||
-            c.name.startsWith('remember_')
-        );
+    (async () => {
+      try {
+        chrome.cookies.getAll({ url }, async (cookies) => {
+          if (chrome.runtime.lastError || !cookies) {
+            sendResponse({ success: false, count: 0, error: chrome.runtime.lastError?.message });
+            return;
+          }
 
-        if (toRemove.length === 0) {
-          sendResponse({ success: true, count: 0 });
-          return;
-        }
+          const toRemove = cookies.filter(
+            (c) =>
+              c.name === 'XSRF-TOKEN' ||
+              c.name.toLowerCase().includes('session') ||
+              c.name.startsWith('remember_')
+          );
 
-        let removedCount = 0;
-        toRemove.forEach((c) => {
-          const protocol = c.secure ? 'https:' : 'http:';
-          const domain = c.domain.startsWith('.') ? c.domain.slice(1) : c.domain;
-          const cookieUrl = `${protocol}//${domain}${c.path}`;
+          if (toRemove.length === 0) {
+            sendResponse({ success: true, count: 0 });
+            return;
+          }
 
-          chrome.cookies.remove({ url: cookieUrl, name: c.name }, () => {
-            removedCount++;
-            if (removedCount === toRemove.length) {
-              sendResponse({ success: true, count: removedCount });
-            }
+          // Build possible candidate URLs to remove cookies across domain, port, and path
+          const removeSingleCookie = (c: chrome.cookies.Cookie): Promise<boolean> => {
+            return new Promise((resolve) => {
+              const urlsToTry: string[] = [];
+
+              // Candidate 1: Active tab origin + path
+              try {
+                const parsed = new URL(url);
+                urlsToTry.push(`${parsed.protocol}//${parsed.host}${c.path}`);
+                urlsToTry.push(`${parsed.protocol}//${parsed.hostname}${c.path}`);
+              } catch {}
+
+              // Candidate 2: Domain reconstructed URL
+              const cleanDomain = c.domain.startsWith('.') ? c.domain.slice(1) : c.domain;
+              const protocol = c.secure ? 'https:' : 'http:';
+              urlsToTry.push(`${protocol}//${cleanDomain}${c.path}`);
+
+              // Attempt removal sequentially across candidate URLs until one succeeds
+              let index = 0;
+              const attempt = () => {
+                if (index >= urlsToTry.length) {
+                  resolve(false);
+                  return;
+                }
+                const targetUrl = urlsToTry[index++];
+                try {
+                  chrome.cookies.remove(
+                    { url: targetUrl, name: c.name, storeId: c.storeId },
+                    (details) => {
+                      if (chrome.runtime.lastError || !details) {
+                        attempt();
+                      } else {
+                        resolve(true);
+                      }
+                    }
+                  );
+                } catch {
+                  attempt();
+                }
+              };
+              attempt();
+            });
+          };
+
+          const removalResults = await Promise.all(toRemove.map((c) => removeSingleCookie(c)));
+          const successfulCount = removalResults.filter(Boolean).length;
+
+          sendResponse({
+            success: true,
+            count: successfulCount
           });
         });
-      });
-    } catch (err) {
-      console.error('[LaraLens] Clear cookies error:', err);
-      sendResponse({ success: false, count: 0, error: String(err) });
-    }
+      } catch (err) {
+        console.error('[LaraLens] Clear cookies error:', err);
+        sendResponse({ success: false, count: 0, error: String(err) });
+      }
+    })();
+
     return true; // async sendResponse
   }
 });

@@ -108,7 +108,10 @@
         <div class="token-card">
           <div class="token-header">
             <span class="token-title">Bearer Token (Sanctum / JWT)</span>
-            <button class="btn-copy-token" data-target="bearer">Copy</button>
+            <div class="token-btn-group">
+              <button class="btn-copy-token" id="btn-edit-bearer" title="Paste or edit token">✏️ Edit</button>
+              <button class="btn-copy-token" data-target="bearer">Copy</button>
+            </div>
           </div>
           <div id="val-bearer" class="token-val empty">No token in storage</div>
         </div>
@@ -203,6 +206,18 @@
           <button id="btn-send-api" class="btn-send">Send</button>
         </div>
 
+        <!-- Authorization & Session Isolation -->
+        <div class="api-auth-bar">
+          <div class="api-auth-field">
+            <span class="api-auth-prefix">Bearer:</span>
+            <input type="text" id="api-bearer-token" class="api-bearer-input" placeholder="JWT or Sanctum token (auto-detected or paste here)">
+          </div>
+          <label class="api-cookie-checkbox" title="Leave UNCHECKED for JWT / Stateless APIs so that 401 unauthenticated errors NEVER clear your browser's active web login session!">
+            <input type="checkbox" id="api-include-cookies">
+            <span>Send Session Cookies</span>
+          </label>
+        </div>
+
         <!-- Request Body Editor for POST / PUT / PATCH -->
         <div id="api-body-group" class="api-body-group" style="display: none;">
           <div class="api-body-header">
@@ -214,7 +229,7 @@
 
         <div class="api-headers-note">
           <span class="badge-dot green"></span>
-          Auto-attached: <code>X-XSRF-TOKEN</code>, <code>laravel_session</code>, <code>Accept: application/json</code>
+          <span id="api-headers-summary">Active: <code>Accept: application/json</code>, <code>X-XSRF-TOKEN</code></span>
         </div>
       </div>
 

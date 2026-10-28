@@ -30,6 +30,7 @@ const btnCopyCurl = document.getElementById('btn-copy-curl') as HTMLButtonElemen
 const btnCopyPostman = document.getElementById('btn-copy-postman') as HTMLButtonElement;
 const btnClearSession = document.getElementById('btn-clear-session') as HTMLButtonElement;
 const btnCopyUser = document.getElementById('btn-copy-user') as HTMLButtonElement;
+const btnEditBearer = document.getElementById('btn-edit-bearer') as HTMLButtonElement;
 
 // DOM: Tab 2 (Inertia)
 const inertiaCompName = document.getElementById('inertia-comp-name') as HTMLSpanElement;
@@ -52,6 +53,9 @@ const routesList = document.getElementById('routes-list') as HTMLDivElement;
 // DOM: Tab 4 (API)
 const apiMethod = document.getElementById('api-method') as HTMLSelectElement;
 const apiEndpoint = document.getElementById('api-endpoint') as HTMLInputElement;
+const apiBearerToken = document.getElementById('api-bearer-token') as HTMLInputElement;
+const apiIncludeCookies = document.getElementById('api-include-cookies') as HTMLInputElement;
+const apiHeadersSummary = document.getElementById('api-headers-summary') as HTMLSpanElement;
 const apiBodyGroup = document.getElementById('api-body-group') as HTMLDivElement;
 const apiRequestBody = document.getElementById('api-request-body') as HTMLTextAreaElement;
 const btnFormatBody = document.getElementById('btn-format-body') as HTMLButtonElement;
@@ -159,12 +163,38 @@ function setupEventListeners(): void {
     }
   });
 
+  // Edit Bearer Token manually
+  btnEditBearer.addEventListener('click', () => {
+    const current = pageData?.auth.bearerToken || apiBearerToken.value || '';
+    const input = prompt('Paste your Bearer / JWT Token:', current);
+    if (input !== null) {
+      const clean = input.replace(/^Bearer\s+/i, '').trim();
+      if (pageData) pageData.auth.bearerToken = clean || undefined;
+      valBearer.textContent = clean || 'No token found in storage';
+      valBearer.classList.toggle('empty', !clean);
+      apiBearerToken.value = clean;
+      if (typeof chrome !== 'undefined' && chrome.storage?.local) {
+        chrome.storage.local.set({ customBearerToken: clean });
+      }
+      showToast(clean ? 'Bearer token saved!' : 'Bearer token cleared');
+      updateApiHeadersSummary();
+    }
+  });
+
   // API Tester
   btnSendApi.addEventListener('click', handleApiSend);
   apiMethod.addEventListener('change', () => {
     const needsBody = ['POST', 'PUT', 'PATCH'].includes(apiMethod.value);
     apiBodyGroup.style.display = needsBody ? 'flex' : 'none';
   });
+  apiBearerToken.addEventListener('input', () => {
+    if (pageData) {
+      pageData.auth.bearerToken = apiBearerToken.value.trim() || undefined;
+    }
+    updateApiHeadersSummary();
+  });
+  apiIncludeCookies.addEventListener('change', updateApiHeadersSummary);
+
   btnFormatBody.addEventListener('click', () => {
     const raw = apiRequestBody.value.trim();
     if (!raw) return;
@@ -222,8 +252,39 @@ function evaluatePageDirectly(tabId: number, url: string): void {
       func: () => {
         const meta = document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement | null;
         const app = document.getElementById('app');
+
+        let bearerToken: string | null = null;
+        try {
+          const isJwt = (str: unknown): boolean => {
+            if (typeof str !== 'string') return false;
+            const clean = str.replace(/^Bearer\s+/i, '').trim();
+            return clean.startsWith('eyJ') && clean.split('.').length === 3;
+          };
+          const cleanToken = (str: string): string => str.replace(/^Bearer\s+/i, '').trim();
+          const commonKeys = ['token', 'jwt', 'access_token', 'accessToken', 'bearer_token', 'auth_token', 'sanctum_token', 'id_token'];
+          for (const k of commonKeys) {
+            const v = localStorage.getItem(k) || sessionStorage.getItem(k);
+            if (v && (isJwt(v) || v.length > 20)) {
+              bearerToken = cleanToken(v);
+              break;
+            }
+          }
+          if (!bearerToken) {
+            for (let i = 0; i < localStorage.length; i++) {
+              const k = localStorage.key(i);
+              if (!k) continue;
+              const v = localStorage.getItem(k);
+              if (v && isJwt(v)) {
+                bearerToken = cleanToken(v);
+                break;
+              }
+            }
+          }
+        } catch {}
+
         return {
           csrfToken: meta?.content || null,
+          bearerToken,
           inertiaRaw: app?.dataset?.page ? JSON.parse(app.dataset.page) : null,
           title: document.title,
           url: window.location.href
@@ -249,6 +310,7 @@ function evaluatePageDirectly(tabId: number, url: string): void {
           },
           auth: {
             csrfToken: r.csrfToken || undefined,
+            bearerToken: r.bearerToken || undefined,
             authUser: r.inertiaRaw?.props?.auth?.user || null
           },
           inertia: r.inertiaRaw
@@ -308,6 +370,9 @@ function mergeCookiesIntoData(): void {
       pageData.detection.frameworkEvidence.push('laravel_session cookie');
     }
   }
+  if (cookies['bearerToken'] && !pageData.auth.bearerToken) {
+    pageData.auth.bearerToken = cookies['bearerToken'];
+  }
 }
 
 function renderAll(): void {
@@ -337,6 +402,23 @@ function renderAll(): void {
 
   valBearer.textContent = pageData.auth.bearerToken || 'No token found in storage';
   valBearer.classList.toggle('empty', !pageData.auth.bearerToken);
+  if (pageData.auth.bearerToken && !apiBearerToken.value) {
+    apiBearerToken.value = pageData.auth.bearerToken;
+  } else if (!pageData.auth.bearerToken) {
+    // Check if custom token was saved
+    if (typeof chrome !== 'undefined' && chrome.storage?.local) {
+      chrome.storage.local.get(['customBearerToken'], (data) => {
+        if (data?.customBearerToken && pageData && !pageData.auth.bearerToken) {
+          pageData.auth.bearerToken = data.customBearerToken;
+          valBearer.textContent = data.customBearerToken;
+          valBearer.classList.remove('empty');
+          if (!apiBearerToken.value) apiBearerToken.value = data.customBearerToken;
+          updateApiHeadersSummary();
+        }
+      });
+    }
+  }
+  updateApiHeadersSummary();
 
   // Authenticated User
   if (pageData.auth.authUser) {
@@ -594,7 +676,7 @@ function copyPostmanHeaders(): void {
   copyToClipboard(JSON.stringify(list, null, 2), 'Postman headers JSON copied!');
 }
 
-function handleClearSession(): void {
+async function handleClearSession(): Promise<void> {
   const url = activeTab?.url || pageData?.url;
   if (!url) {
     showToast('No active tab URL to reset');
@@ -602,27 +684,111 @@ function handleClearSession(): void {
   }
 
   btnClearSession.textContent = 'Clearing...';
-  if (typeof chrome !== 'undefined' && chrome.runtime?.sendMessage) {
-    chrome.runtime.sendMessage({ type: 'LARALENS_CLEAR_COOKIES', url }, (res) => {
-      btnClearSession.textContent = '🧹 Reset Session';
-      if (res?.success) {
-        showToast(`Cleared ${res.count || 0} session cookies! Reloading...`);
-        if (activeTab?.id) {
-          setTimeout(() => {
-            chrome.tabs.reload(activeTab!.id!);
-            window.close();
-          }, 600);
-        }
-      } else {
-        showToast('Could not clear cookies');
-      }
-    });
-  } else {
+
+  if (typeof chrome === 'undefined' || !chrome.cookies) {
     setTimeout(() => {
       btnClearSession.textContent = '🧹 Reset Session';
       showToast('Cleared mock session cookies!');
     }, 400);
+    return;
   }
+
+  try {
+    chrome.cookies.getAll({ url }, async (cookiesList) => {
+      const err = chrome.runtime.lastError?.message;
+      if (err) {
+        console.warn('[LaraLens] Cookies query warning:', err);
+      }
+
+      const toRemove = (cookiesList || []).filter(
+        (c) =>
+          c.name === 'XSRF-TOKEN' ||
+          c.name.toLowerCase().includes('session') ||
+          c.name.startsWith('remember_') ||
+          c.name.toLowerCase().includes('jwt') ||
+          c.name.toLowerCase() === 'token'
+      );
+
+      if (toRemove.length === 0) {
+        btnClearSession.textContent = '🧹 Reset Session';
+        showToast('No active session cookies found');
+        return;
+      }
+
+      let removedCount = 0;
+      for (const c of toRemove) {
+        let removed = false;
+        const candidateUrls: string[] = [];
+
+        // Candidate 1: Current page origin + cookie path
+        try {
+          const parsed = new URL(url);
+          const proto = c.secure ? 'https:' : parsed.protocol;
+          candidateUrls.push(`${proto}//${parsed.host}${c.path}`);
+          candidateUrls.push(`${proto}//${parsed.hostname}${c.path}`);
+        } catch {}
+
+        // Candidate 2: Cookie domain + cookie path
+        const cleanDomain = c.domain.startsWith('.') ? c.domain.slice(1) : c.domain;
+        const proto = c.secure ? 'https:' : 'http:';
+        candidateUrls.push(`${proto}//${cleanDomain}${c.path}`);
+
+        for (const targetUrl of candidateUrls) {
+          if (removed) break;
+          removed = await new Promise<boolean>((resolve) => {
+            try {
+              chrome.cookies.remove({ url: targetUrl, name: c.name, storeId: c.storeId }, (details) => {
+                const removeErr = chrome.runtime.lastError?.message;
+                resolve(!!details);
+              });
+            } catch {
+              resolve(false);
+            }
+          });
+        }
+
+        if (removed) removedCount++;
+      }
+
+      btnClearSession.textContent = '🧹 Reset Session';
+
+      // Update local state and UI
+      valSession.textContent = 'No laravel_session cookie';
+      valSession.classList.add('empty');
+      valXsrf.textContent = 'No XSRF-TOKEN cookie';
+      valXsrf.classList.add('empty');
+      if (pageData) {
+        pageData.auth.sessionCookie = undefined;
+        pageData.auth.xsrfToken = undefined;
+      }
+
+      showToast(`Cleared ${removedCount} session cookies! Reloading tab...`);
+
+      if (activeTab?.id) {
+        setTimeout(() => {
+          chrome.tabs.reload(activeTab!.id!);
+          window.close();
+        }, 600);
+      }
+    });
+  } catch (err: any) {
+    console.error('[LaraLens] Clear session error:', err);
+    btnClearSession.textContent = '🧹 Reset Session';
+    showToast(`Error: ${err?.message || 'Could not clear cookies'}`);
+  }
+}
+
+function updateApiHeadersSummary(): void {
+  if (!apiHeadersSummary) return;
+  const hasBearer = !!apiBearerToken?.value?.trim() || !!pageData?.auth.bearerToken;
+  const hasCookies = !!apiIncludeCookies?.checked;
+  const parts: string[] = ['<code>Accept: application/json</code>'];
+  if (hasBearer) parts.push('<code>Authorization: Bearer ...</code>');
+  if (hasCookies) {
+    parts.push('<code>laravel_session</code>');
+    parts.push('<code>X-XSRF-TOKEN</code>');
+  }
+  apiHeadersSummary.innerHTML = `Active: ${parts.join(', ')}`;
 }
 
 async function handleApiSend(): Promise<void> {
@@ -647,13 +813,15 @@ async function handleApiSend(): Promise<void> {
 
   try {
     const xsrf = pageData?.auth.xsrfToken || cookies['XSRF-TOKEN'];
-    const bearer = pageData?.auth.bearerToken;
+    // Prefer token from API input or detected token
+    const bearer = apiBearerToken.value.trim() || pageData?.auth.bearerToken;
+    const sendCookies = apiIncludeCookies.checked;
 
     const headers: Record<string, string> = {
       Accept: 'application/json',
       'Content-Type': 'application/json'
     };
-    if (xsrf) headers['X-XSRF-TOKEN'] = xsrf;
+    if (xsrf && sendCookies) headers['X-XSRF-TOKEN'] = xsrf;
     if (bearer) headers['Authorization'] = `Bearer ${bearer}`;
 
     const needsBody = ['POST', 'PUT', 'PATCH'].includes(method);
@@ -667,7 +835,9 @@ async function handleApiSend(): Promise<void> {
       method,
       headers,
       body,
-      credentials: 'include'
+      // CRITICAL: When sendCookies is false (e.g. for stateless JWT API),
+      // omit credentials so 401 unauthenticated NEVER wipes the browser's web login!
+      credentials: sendCookies ? 'include' : 'omit'
     });
     const duration = Math.round(performance.now() - start);
 
