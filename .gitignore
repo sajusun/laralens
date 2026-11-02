@@ -4,9 +4,11 @@ node_modules/
 
 # Build Output & Packaged Archives
 dist/
+dist-firefox/
 build/
 out/
 *.zip
+*.xpi
 *.crx
 
 # Environment & Private Keys
@@ -38,6 +40,7 @@ yarn-debug.log*
 
 # Internal Store Submissions & Planning Docs
 store-assets/
+store_assets/
 STORE_SUBMISSION_DATA.txt
 API_TESTER_POSTMAN_PLAN.md
 MICROSOFT_EDGE_SUBMISSION_GUIDE.md
