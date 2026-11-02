@@ -1,5 +1,43 @@
+# Dependencies
 node_modules/
+.pnpm-store/
+
+# Build Output & Packaged Archives
 dist/
-*.log
-.DS_Store
+build/
+out/
 *.zip
+*.crx
+
+# Environment & Private Keys
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.cert
+
+# IDE & Editor Settings
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs & Temporary Files
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+*.tmp
+*.temp
+
+# Internal Store Submissions & Planning Docs
+store-assets/
+STORE_SUBMISSION_DATA.txt
+API_TESTER_POSTMAN_PLAN.md
+MICROSOFT_EDGE_SUBMISSION_GUIDE.md
