@@ -445,7 +445,7 @@ function renderAll(): void {
     inertiaUrlTag.textContent = '-';
     propsJsonViewer.textContent = '';
     inertiaAlerts.style.display = 'none';
-    inertiaAlerts.innerHTML = '';
+    inertiaAlerts.textContent = '';
     propsEmpty.style.display = 'block';
   }
 
@@ -457,14 +457,18 @@ function renderAll(): void {
   } else {
     badgeRoutes.textContent = '0';
     routesCountLabel.textContent = '0 routes found';
-    routesList.innerHTML = '<div class="empty-state">No Ziggy routes detected on this page.</div>';
+    routesList.textContent = '';
+    const emptyMsg = document.createElement('div');
+    emptyMsg.className = 'empty-state';
+    emptyMsg.textContent = 'No Ziggy routes detected on this page.';
+    routesList.appendChild(emptyMsg);
   }
 }
 
 function renderInertiaAlerts(): void {
   if (!pageData?.inertia) {
     inertiaAlerts.style.display = 'none';
-    inertiaAlerts.innerHTML = '';
+    inertiaAlerts.textContent = '';
     return;
   }
 
@@ -476,40 +480,50 @@ function renderInertiaAlerts(): void {
 
   if (!hasErrors && !hasFlash) {
     inertiaAlerts.style.display = 'none';
-    inertiaAlerts.innerHTML = '';
+    inertiaAlerts.textContent = '';
     return;
   }
 
-  inertiaAlerts.innerHTML = '';
+  inertiaAlerts.textContent = '';
   inertiaAlerts.style.display = 'flex';
 
   if (hasErrors) {
     const errBox = document.createElement('div');
     errBox.className = 'inertia-alert error';
-    errBox.innerHTML = `
-      <div class="inertia-alert-title">
-        <span>⚠️ Validation Errors Detected (${Object.keys(errors).length})</span>
-      </div>
-      <div class="inertia-alert-content">${escapeHtml(JSON.stringify(errors, null, 2))}</div>
-    `;
+
+    const titleDiv = document.createElement('div');
+    titleDiv.className = 'inertia-alert-title';
+    const titleSpan = document.createElement('span');
+    titleSpan.textContent = `⚠️ Validation Errors Detected (${Object.keys(errors).length})`;
+    titleDiv.appendChild(titleSpan);
+
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'inertia-alert-content';
+    contentDiv.textContent = JSON.stringify(errors, null, 2);
+
+    errBox.appendChild(titleDiv);
+    errBox.appendChild(contentDiv);
     inertiaAlerts.appendChild(errBox);
   }
 
   if (hasFlash) {
     const flashBox = document.createElement('div');
     flashBox.className = 'inertia-alert flash';
-    flashBox.innerHTML = `
-      <div class="inertia-alert-title">
-        <span>💬 Flash Notification</span>
-      </div>
-      <div class="inertia-alert-content">${escapeHtml(JSON.stringify(flash, null, 2))}</div>
-    `;
+
+    const titleDiv = document.createElement('div');
+    titleDiv.className = 'inertia-alert-title';
+    const titleSpan = document.createElement('span');
+    titleSpan.textContent = '💬 Flash Notification';
+    titleDiv.appendChild(titleSpan);
+
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'inertia-alert-content';
+    contentDiv.textContent = JSON.stringify(flash, null, 2);
+
+    flashBox.appendChild(titleDiv);
+    flashBox.appendChild(contentDiv);
     inertiaAlerts.appendChild(flashBox);
   }
-}
-
-function escapeHtml(str: string): string {
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 function renderInertiaProps(): void {
@@ -566,11 +580,15 @@ function renderZiggyRoutes(): void {
   routesCountLabel.textContent = `${routeEntries.length} routes matching`;
 
   if (routeEntries.length === 0) {
-    routesList.innerHTML = '<div class="empty-state">No routes match your search.</div>';
+    routesList.textContent = '';
+    const emptyDiv = document.createElement('div');
+    emptyDiv.className = 'empty-state';
+    emptyDiv.textContent = 'No routes match your search.';
+    routesList.appendChild(emptyDiv);
     return;
   }
 
-  routesList.innerHTML = '';
+  routesList.textContent = '';
   routeEntries.slice(0, 100).forEach(([name, route]) => {
     const card = document.createElement('div');
     card.className = 'route-card';
@@ -782,13 +800,20 @@ function updateApiHeadersSummary(): void {
   if (!apiHeadersSummary) return;
   const hasBearer = !!apiBearerToken?.value?.trim() || !!pageData?.auth.bearerToken;
   const hasCookies = !!apiIncludeCookies?.checked;
-  const parts: string[] = ['<code>Accept: application/json</code>'];
-  if (hasBearer) parts.push('<code>Authorization: Bearer ...</code>');
+  const parts: string[] = ['Accept: application/json'];
+  if (hasBearer) parts.push('Authorization: Bearer ...');
   if (hasCookies) {
-    parts.push('<code>laravel_session</code>');
-    parts.push('<code>X-XSRF-TOKEN</code>');
+    parts.push('laravel_session');
+    parts.push('X-XSRF-TOKEN');
   }
-  apiHeadersSummary.innerHTML = `Active: ${parts.join(', ')}`;
+  apiHeadersSummary.textContent = '';
+  apiHeadersSummary.appendChild(document.createTextNode('Active: '));
+  parts.forEach((part, idx) => {
+    if (idx > 0) apiHeadersSummary.appendChild(document.createTextNode(', '));
+    const code = document.createElement('code');
+    code.textContent = part;
+    apiHeadersSummary.appendChild(code);
+  });
 }
 
 async function handleApiSend(): Promise<void> {

@@ -12,15 +12,12 @@ out/
 *.crx
 
 # Environment & Private Keys
-.env
-.env.local
 .env.*.local
 *.pem
 *.key
 *.cert
 
 # IDE & Editor Settings
-.vscode/
 .idea/
 *.sublime-project
 *.sublime-workspace
@@ -44,3 +41,4 @@ store_assets/
 STORE_SUBMISSION_DATA.txt
 API_TESTER_POSTMAN_PLAN.md
 MICROSOFT_EDGE_SUBMISSION_GUIDE.md
+config.bat

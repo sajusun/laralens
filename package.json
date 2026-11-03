@@ -4,10 +4,10 @@
   "description": "The Ultimate DevTools for Laravel & Inertia.js Developers - Auth Hub, Inertia Props & Ziggy Routes",
   "type": "module",
   "scripts": {
-    "dev": "node scripts/build.js --watch",
-    "build": "tsc --noEmit && node scripts/build.js --target=chrome",
-    "build:firefox": "tsc --noEmit && node scripts/build.js --target=firefox",
-    "build:all": "tsc --noEmit && node scripts/build.js --target=all",
+    "dev": "node init && node scripts/build.js --watch",
+    "build": "node init && tsc --noEmit && node scripts/build.js --target=chrome",
+    "build:firefox": "node init && tsc --noEmit && node scripts/build.js --target=firefox",
+    "build:all": "node init && tsc --noEmit && node scripts/build.js --target=all",
     "package": "node scripts/package.js --target=chrome",
     "package:firefox": "node scripts/package.js --target=firefox",
     "package:all": "node scripts/package.js --target=all",
@@ -33,6 +33,8 @@
     "@resvg/resvg-js": "^2.6.2",
     "@types/chrome": "^0.0.280",
     "@types/node": "^20.12.7",
+    "dotenv": "^8.2.0",
+    "node-fetch": "^3.3.2",
     "typescript": "^5.4.5",
     "vite": "^5.2.11"
   }
